@@ -19,6 +19,7 @@ class MessagingWidget {
 
     this.initializeEventListeners();
     this.loadConversations();
+    this.registerServiceWorker();
   }
   initializeEventListeners() {
     // Toggle widget
@@ -165,6 +166,32 @@ class MessagingWidget {
     } catch (error) {
       this.conversationsContainer.innerHTML =
         '<div class="loading">Error loading conversations</div>';
+    }
+  }
+
+  async registerServiceWorker() {
+    if ("serviceWorker" in navigator) {
+      try {
+        const registration = await navigator.serviceWorker.register(
+          "../service-worker.js"
+        );
+
+        // Request notification permission
+        const permission = await Notification.requestPermission();
+        if (permission === "granted") {
+          // Start the notification service
+          registration.active.postMessage({
+            type: "START_NOTIFICATION_SERVICE",
+          });
+        }
+
+        console.log(
+          "Service Worker registered successfully:",
+          registration.scope
+        );
+      } catch (error) {
+        console.error("Service Worker registration failed:", error);
+      }
     }
   }
 
