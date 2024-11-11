@@ -1,0 +1,331 @@
+:root {
+    --primary-color: #3498db;
+    --primary-hover: #2980b9;
+    --background: #f8f9fa;
+    --card-background: #ffffff;
+    --text-primary: #2c3e50;
+    --text-secondary: #7f8c8d;
+    --border-color: #e0e0e0;
+    --success-color: #2ecc71;
+    --error-color: #e74c3c;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+* {
+    font-family: "Space Grotesk", sans-serif;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+}
+
+.msg-widget {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 380px;
+    height: 600px;
+    background: var(--card-background);
+    border-radius: 16px;
+    box-shadow: 0 8px 30px var(--shadow-color);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    opacity: 0;
+    transform: translateY(100px);
+    z-index: 1000;
+    display: none;
+}
+
+.msg-widget.active {
+    opacity: 1;
+    transform: translateY(0);
+    display: flex;
+}
+
+.widget-header {
+    padding: 20px;
+    background: var(--primary-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.header-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.action-btn, .widget-close {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 8px;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.action-btn:hover, .widget-close:hover {
+    background: var(--primary-hover);
+}
+
+.widget-title {
+    font-weight: 600;
+    margin: 0;
+    font-size: 18px;
+}
+
+.widget-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--background);
+}
+
+.search-box {
+    padding: 16px;
+    background: var(--card-background);
+    border-bottom: 1px solid var(--border-color);
+    position: relative;
+}
+
+.search-icon {
+    position: absolute;
+    left: 28px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+}
+
+.search-input {
+    width: 100%;
+    padding: 12px 12px 12px 40px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    font-size: 15px;
+    background: var(--background);
+    color: var(--text-primary);
+    transition: all 0.2s;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.conversations {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+}
+
+.conversation {
+    padding: 16px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 8px;
+    background: var(--card-background);
+    box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+.conversation:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+.conversation.active {
+    background: #EBF5FB;
+    border-left: 4px solid var(--primary-color);
+}
+
+.user-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    display: none;
+}
+
+.user-item {
+    padding: 16px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 8px;
+    background: var(--card-background);
+    box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+.user-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+.messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: none;
+    background: var(--background);
+}
+
+.message {
+    margin-bottom: 16px;
+    max-width: 80%;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.message.sent {
+    margin-left: auto;
+}
+
+.message-content {
+    padding: 12px 16px;
+    border-radius: 16px;
+    font-size: 15px;
+    line-height: 1.4;
+    box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+.sent .message-content {
+    background: var(--primary-color);
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+
+.received .message-content {
+    background: var(--card-background);
+    color: var(--text-primary);
+    border-bottom-left-radius: 4px;
+}
+
+.message-input {
+    padding: 16px;
+    background: var(--card-background);
+    border-top: 1px solid var(--border-color);
+    display: none;
+}
+
+.message-form {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+}
+
+.message-textbox {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    font-size: 15px;
+    resize: none;
+    max-height: 120px;
+    background: var(--background);
+    color: var(--text-primary);
+    transition: all 0.2s;
+}
+
+.message-textbox:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.attachment-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 20px;
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.attachment-btn:hover {
+    color: var(--primary-color);
+    background: var(--background);
+}
+
+.send-button {
+    padding: 12px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.send-button:hover {
+    background: var(--primary-hover);
+    transform: scale(1.05);
+}
+
+.widget-trigger {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 30px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+    transition: all 0.3s ease;
+    z-index: 1000;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.widget-trigger:hover {
+    transform: scale(1.1);
+    background: var(--primary-hover);
+}
+
+.loading {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+    background: #BDC3C7;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #95A5A6;
+}

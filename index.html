@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="./src/css/style.css" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <button id="widget-trigger" class="widget-trigger">
+      <i class="fas fa-comments"></i>
+    </button>
+
+    <div class="msg-widget">
+      <div class="widget-header">
+        <h3 class="widget-title">Messages</h3>
+        <div class="header-actions">
+          <button class="action-btn">
+            <i class="fas fa-video"></i>
+          </button>
+          <button class="widget-close">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="widget-content">
+        <div class="search-box">
+          <i class="fas fa-search search-icon"></i>
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Search users..."
+          />
+        </div>
+
+        <div class="conversations"></div>
+        <div class="user-list"></div>
+        <div class="messages"></div>
+
+        <div class="message-input">
+          <form class="message-form">
+            <button type="button" class="attachment-btn">
+              <i class="fas fa-paperclip"></i>
+            </button>
+            <textarea
+              class="message-textbox"
+              placeholder="Type a message..."
+              rows="1"
+            ></textarea>
+            <button type="submit" class="send-button">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script src="./src/js/app.js"></script>
+  </body>
+</html>
