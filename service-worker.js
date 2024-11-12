@@ -1,9 +1,17 @@
 // Service Worker for handling background message notifications
-const POLL_INTERVAL = 60000; // 1 minute in milliseconds
-const API_ENDPOINT = "/newMessages";
-
-// Cache name for offline support
+const POLL_INTERVAL = 60000;
+const API_ENDPOINT = "https://localhost:3000/messaging/unreadMessages";
+const TOKEN_REFRESH_INTERVAL = 9 * 60 * 1000;
+const MESSAGE_CHECK_INTERVAL = 60 * 1000;
 const CACHE_NAME = "message-cache-v1";
+
+// State management
+let state = {
+  token: null,
+  lastTokenRefreshTime: 0,
+  alreadyNotified: new Set(),
+  isCheckingMessages: false,
+};
 
 // Install event - cache essential files
 self.addEventListener("install", (event) => {
@@ -19,7 +27,6 @@ self.addEventListener("install", (event) => {
   );
 });
 
-// Activate event - clean up old caches
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -30,91 +37,125 @@ self.addEventListener("activate", (event) => {
       );
     })
   );
-  // Ensure the service worker takes control immediately
   return self.clients.claim();
 });
 
-// Function to check for new messages
-async function checkNewMessages() {
+async function refreshToken() {
   try {
-    const response = await fetch(API_ENDPOINT);
-    if (!response.ok) throw new Error("Network response was not ok");
+    const response = await fetch("https://localhost:3000/v1/auth/refresh", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-    const messages = await response.json();
-
-    if (messages && messages.length > 0) {
-      // Group messages by conversation
-      const messagesByConversation = messages.reduce((acc, message) => {
-        if (!acc[message.conversationId]) {
-          acc[message.conversationId] = [];
-        }
-        acc[message.conversationId].push(message);
-        return acc;
-      }, {});
-
-      // Create notifications for each conversation
-      Object.entries(messagesByConversation).forEach(
-        ([conversationId, messages]) => {
-          const latestMessage = messages[messages.length - 1];
-          const messageCount = messages.length;
-
-          self.registration.showNotification(
-            "New Message" + (messageCount > 1 ? "s" : ""),
-            {
-              body:
-                messageCount > 1
-                  ? `${messageCount} new messages from ${latestMessage.sender}`
-                  : `${latestMessage.sender}: ${latestMessage.content}`,
-              icon: "/path/to/notification-icon.png",
-              badge: "/path/to/badge-icon.png",
-              tag: `conversation-${conversationId}`, // Group notifications by conversation
-              renotify: true,
-              data: {
-                conversationId,
-                url: `/conversations/${conversationId}`,
-              },
-            }
-          );
-        }
-      );
+    if (!response.ok) {
+      throw new Error(`Token refresh failed with status: ${response.status}`);
     }
+
+    const data = await response.json();
+    state.token = data.accessToken;
+    state.lastTokenRefreshTime = Date.now();
+    return true;
   } catch (error) {
-    console.error("Error checking for new messages:", error);
+    console.error("Error refreshing token:", error);
+    return false;
   }
 }
 
-// Set up periodic message checking
-function startPeriodicMessageCheck() {
-  // Initial check
-  checkNewMessages();
+async function fetchUnreadMessages() {
+  if (!state.token) {
+    console.log("No token available, attempting to refresh...");
+    const refreshed = await refreshToken();
+    if (!refreshed) {
+      throw new Error("Failed to obtain valid token");
+    }
+  }
 
-  // Set up periodic checks
-  setInterval(checkNewMessages, POLL_INTERVAL);
+  const response = await fetch(API_ENDPOINT, {
+    method: "GET",
+    credentials: "include",
+    headers: {
+      Authorization: `Bearer ${state.token}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      state.token = null; // Clear invalid token
+      throw new Error("Unauthorized - token may be invalid");
+    }
+    throw new Error(`API request failed with status: ${response.status}`);
+  }
+
+  return response.json();
 }
 
-// Handle notification clicks
+function showNotification(message) {
+  if (!state.alreadyNotified.has(message.id)) {
+    self.registration.showNotification("New Message", {
+      body: message.content,
+      tag: message.id,
+      data: { url: message.url || "/" },
+    });
+    state.alreadyNotified.add(message.id);
+  }
+}
+
+async function startPeriodicMessageCheck() {
+  // Prevent multiple concurrent checks
+  if (state.isCheckingMessages) {
+    return;
+  }
+
+  try {
+    state.isCheckingMessages = true;
+    const now = Date.now();
+
+    if (
+      !state.token ||
+      now - state.lastTokenRefreshTime >= TOKEN_REFRESH_INTERVAL
+    ) {
+      const refreshed = await refreshToken();
+      if (!refreshed) {
+        throw new Error("Failed to refresh token");
+      }
+    }
+
+    const messages = await fetchUnreadMessages();
+    messages.forEach(showNotification);
+  } catch (error) {
+    console.error("Message check failed:", error);
+    // If token is invalid, clear it so next attempt will refresh
+    if (error.message.includes("Unauthorized")) {
+      state.token = null;
+    }
+  } finally {
+    state.isCheckingMessages = false;
+    // Schedule next check
+    setTimeout(startPeriodicMessageCheck, MESSAGE_CHECK_INTERVAL);
+  }
+}
+
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
-  const conversationData = event.notification.data;
-
   event.waitUntil(
     clients.matchAll({ type: "window" }).then((clientList) => {
-      // If a window is already open, focus it and navigate
       for (const client of clientList) {
-        if (client.url === conversationData.url) {
+        if (client.url === event.notification.data.url) {
           return client.focus();
         }
       }
-      // Otherwise open a new window
-      return clients.openWindow(conversationData.url);
+      return clients.openWindow(event.notification.data.url);
     })
   );
 });
 
-// Handle incoming messages from the web app
 self.addEventListener("message", (event) => {
-  if (event.data && event.data.type === "START_NOTIFICATION_SERVICE") {
+  if (event.data?.type === "START_NOTIFICATION_SERVICE") {
     startPeriodicMessageCheck();
   }
 });
