@@ -87,7 +87,7 @@ class MessagingWidget {
       () => this.refreshToken(),
       9 * 60 * 1000
     );
-    this.refreshToken();
+    await this.refreshToken();
     userInfo = await this.getUserInfo();
     this.initializeEventListeners();
     this.loadConversations();
@@ -145,7 +145,7 @@ class MessagingWidget {
       }
     });
 
-    this.socket = io("wss://localhost:3000", {
+    this.socket = io("wss://apis.erzen.xyz/messaging", {
       transports: ["websocket"],
       query: {
         token: localStorage.getItem("token"),
@@ -255,12 +255,29 @@ class MessagingWidget {
       });
   }
 
-  startVideoCall() {
-    // Implement video call logic here
-    console.log(
-      "Starting video call for conversation:",
-      this.currentConversation
+  randomUUID() {
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+      /[xy]/g,
+      function (c) {
+        var r = (Math.random() * 16) | 0,
+          v = c === "x" ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+      }
     );
+  }
+
+  startVideoCall() {
+    // Generate random UUID
+    const uuid = this.randomUUID();
+    // Create popup window
+    const popup = window.open(
+      `https://call.erzen.tk/index.html?room=${uuid}`,
+      "Video Call",
+      "width=400,height=600"
+    );
+
+    let message = "https://call.erzen.tk/index.html?room=" + uuid;
+    this.sendMessage(message);
   }
 
   async searchUsers(query) {
@@ -268,7 +285,7 @@ class MessagingWidget {
       this.userListContainer.innerHTML =
         '<div class="loading">Searching...</div>';
       const response = await fetch(
-        `https://localhost:3000/messaging/searchUsers?query=${encodeURIComponent(
+        `https://apis.erzen.xyz/messaging/searchUsers?query=${encodeURIComponent(
           query
         )}`,
         {
@@ -283,9 +300,16 @@ class MessagingWidget {
         .filter((user) => user.id !== userInfo.id)
         .map(
           (user) => `
-          <div class="user-item" data-username="${user.username}" data-id="${user.id}">
+          <div class="user-item" data-username="${user.username}" data-id="${
+            user.id
+          }">
+          <img src="${
+            user.profilePicture ||
+            "https://icons-for-free.com/iff/png/512/facebook+profile+user+profile+icon-1320184041317225686.png"
+          }" alt="${user.username}" class="profile-image">
           <div>@${user.username}</div>
           </div>
+          
           `
         )
         .join("");
@@ -305,7 +329,7 @@ class MessagingWidget {
 
   async getUserInfo() {
     try {
-      const response = await fetch("https://localhost:3000/v1/auth/info", {
+      const response = await fetch("https://apis.erzen.xyz/v1/auth/info", {
         credentials: "include",
       });
       const user = await response.json();
@@ -321,7 +345,7 @@ class MessagingWidget {
       this.conversationsContainer.innerHTML =
         '<div class="loading">Loading conversations...</div>';
       const response = await fetch(
-        "https://localhost:3000/messaging/conversations",
+        "https://apis.erzen.xyz/messaging/conversations",
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -413,7 +437,7 @@ class MessagingWidget {
       this.messagesContainer.innerHTML =
         '<div class="loading">Loading messages...</div>';
       const response = await fetch(
-        `https://localhost:3000/messaging/messages/${this.currentConversation}?page=${this.currentPage}&pageSize=${this.perPage}`,
+        `https://apis.erzen.xyz/messaging/messages/${this.currentConversation}?page=${this.currentPage}&pageSize=${this.perPage}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -457,7 +481,7 @@ class MessagingWidget {
   async fastLoadMessages() {
     try {
       const response = await fetch(
-        `https://localhost:3000/messaging/messages/${this.currentConversation}?page=${this.currentPage}&pageSize=${this.perPage}`,
+        `https://apis.erzen.xyz/messaging/messages/${this.currentConversation}?page=${this.currentPage}&pageSize=${this.perPage}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -510,7 +534,7 @@ class MessagingWidget {
 
     try {
       const response = await fetch(
-        `https://localhost:3000/messaging/messages/${
+        `https://apis.erzen.xyz/messaging/messages/${
           this.currentConversation
         }?page=${this.currentPage + 1}&pageSize=${this.perPage}`,
         {
@@ -559,7 +583,7 @@ class MessagingWidget {
   async sendMessage(content) {
     try {
       const response = await fetch(
-        "https://localhost:3000/messaging/send/" + selectedUser,
+        "https://apis.erzen.xyz/messaging/send/" + selectedUser,
         {
           method: "POST",
           credentials: "include",
@@ -632,6 +656,17 @@ class MessagingWidget {
         "https://xen-auth.s3.eu-west-3.amazonaws.com/"
       );
 
+      try {
+        const parsedUrl = new URL(url);
+        const isCallErzen = parsedUrl.hostname === "call.erzen.tk";
+
+        if (isCallErzen) {
+          return `<div class="call-link" onclick="window.open('${url}', 'Video Call', 'width=800,height=600')">Join Video Call</div>`;
+        }
+      } catch (e) {
+        // Invalid URL, proceed as normal
+      }
+
       if (isImageExtension || isS3Image) {
         return `<img loading="lazy" onclick="openImage('${url}')" src="${url}" alt="Image">`;
       } else {
@@ -660,7 +695,7 @@ class MessagingWidget {
 
     if (!token || !expiresAt || now >= expiresAt - 60 * 1000) {
       try {
-        const response = await fetch("https://localhost:3000/v1/auth/refresh", {
+        const response = await fetch("https://apis.erzen.xyz/v1/auth/refresh", {
           method: "POST",
           credentials: "include",
           headers: {
@@ -732,7 +767,7 @@ class MessagingWidget {
   async deleteMessage(messageId) {
     try {
       const response = await fetch(
-        `https://localhost:3000/messaging/delete/${messageId}`,
+        `https://apis.erzen.xyz/messaging/delete/${messageId}`,
         {
           method: "DELETE",
           credentials: "include",
@@ -872,7 +907,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 async function getUserAlbums() {
-  const response = await fetch("https://localhost:3000/v1/collection/list", {
+  const response = await fetch("https://apis.erzen.xyz/v1/collection/list", {
     headers: {
       Authorization: `Bearer ${localStorage.getItem("token")}`,
     },
@@ -894,7 +929,7 @@ async function ensureAlbumExists() {
     return album[0].id;
   }
 
-  const response = await fetch("https://localhost:3000/v1/collection/create", {
+  const response = await fetch("https://apis.erzen.xyz/v1/collection/create", {
     method: "POST",
     credentials: "include",
     headers: {
@@ -926,7 +961,7 @@ async function uploadImage(url) {
     return;
   }
 
-  const response = await fetch("https://localhost:3000/v1/photo/create", {
+  const response = await fetch("https://apis.erzen.xyz/v1/photo/create", {
     method: "POST",
     credentials: "include",
     headers: {
