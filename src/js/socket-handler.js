@@ -1,4 +1,4 @@
-const socket = io("http://localhost:3000", {
+const socket = io("https://apis.erzen.xyz:3000", {
   query: {
     token: localStorage.getItem("token"),
   },

@@ -285,7 +285,7 @@ class MessagingWidget {
       this.userListContainer.innerHTML =
         '<div class="loading">Searching...</div>';
       const response = await fetch(
-        `https://apis.erzen.xyz/messaging/searchUsers?query=${encodeURIComponent(
+        `https://apis.erzen.tk/messaging/searchUsers?query=${encodeURIComponent(
           query
         )}`,
         {
@@ -329,7 +329,7 @@ class MessagingWidget {
 
   async getUserInfo() {
     try {
-      const response = await fetch("https://apis.erzen.xyz/v1/auth/info", {
+      const response = await fetch("https://apis.erzen.tk/v1/auth/info", {
         credentials: "include",
       });
       const user = await response.json();
@@ -345,7 +345,7 @@ class MessagingWidget {
       this.conversationsContainer.innerHTML =
         '<div class="loading">Loading conversations...</div>';
       const response = await fetch(
-        "https://apis.erzen.xyz/messaging/conversations",
+        "https://apis.erzen.tk/messaging/conversations",
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -437,7 +437,7 @@ class MessagingWidget {
       this.messagesContainer.innerHTML =
         '<div class="loading">Loading messages...</div>';
       const response = await fetch(
-        `https://apis.erzen.xyz/messaging/messages/${this.currentConversation}?page=${this.currentPage}&pageSize=${this.perPage}`,
+        `https://apis.erzen.tk/messaging/messages/${this.currentConversation}?page=${this.currentPage}&pageSize=${this.perPage}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -481,7 +481,7 @@ class MessagingWidget {
   async fastLoadMessages() {
     try {
       const response = await fetch(
-        `https://apis.erzen.xyz/messaging/messages/${this.currentConversation}?page=${this.currentPage}&pageSize=${this.perPage}`,
+        `https://apis.erzen.tk/messaging/messages/${this.currentConversation}?page=${this.currentPage}&pageSize=${this.perPage}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -534,7 +534,7 @@ class MessagingWidget {
 
     try {
       const response = await fetch(
-        `https://apis.erzen.xyz/messaging/messages/${
+        `https://apis.erzen.tk/messaging/messages/${
           this.currentConversation
         }?page=${this.currentPage + 1}&pageSize=${this.perPage}`,
         {
@@ -583,7 +583,7 @@ class MessagingWidget {
   async sendMessage(content) {
     try {
       const response = await fetch(
-        "https://apis.erzen.xyz/messaging/send/" + selectedUser,
+        "https://apis.erzen.tk/messaging/send/" + selectedUser,
         {
           method: "POST",
           credentials: "include",
@@ -695,7 +695,7 @@ class MessagingWidget {
 
     if (!token || !expiresAt || now >= expiresAt - 60 * 1000) {
       try {
-        const response = await fetch("https://apis.erzen.xyz/v1/auth/refresh", {
+        const response = await fetch("https://apis.erzen.tk/v1/auth/refresh", {
           method: "POST",
           credentials: "include",
           headers: {
@@ -767,7 +767,7 @@ class MessagingWidget {
   async deleteMessage(messageId) {
     try {
       const response = await fetch(
-        `https://apis.erzen.xyz/messaging/delete/${messageId}`,
+        `https://apis.erzen.tk/messaging/delete/${messageId}`,
         {
           method: "DELETE",
           credentials: "include",
@@ -907,7 +907,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 async function getUserAlbums() {
-  const response = await fetch("https://apis.erzen.xyz/v1/collection/list", {
+  const response = await fetch("https://apis.erzen.tk/v1/collection/list", {
     headers: {
       Authorization: `Bearer ${localStorage.getItem("token")}`,
     },
@@ -929,7 +929,7 @@ async function ensureAlbumExists() {
     return album[0].id;
   }
 
-  const response = await fetch("https://apis.erzen.xyz/v1/collection/create", {
+  const response = await fetch("https://apis.erzen.tk/v1/collection/create", {
     method: "POST",
     credentials: "include",
     headers: {
@@ -961,7 +961,7 @@ async function uploadImage(url) {
     return;
   }
 
-  const response = await fetch("https://apis.erzen.xyz/v1/photo/create", {
+  const response = await fetch("https://apis.erzen.tk/v1/photo/create", {
     method: "POST",
     credentials: "include",
     headers: {

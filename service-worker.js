@@ -1,6 +1,6 @@
 // Service Worker for handling background message notifications
 const POLL_INTERVAL = 60000;
-const API_ENDPOINT = "https://apis.erzen.xyz/messaging/unreadMessages";
+const API_ENDPOINT = "https://apis.erzen.tk/messaging/unreadMessages";
 const TOKEN_REFRESH_INTERVAL = 9 * 60 * 1000;
 const MESSAGE_CHECK_INTERVAL = 60 * 1000;
 const CACHE_NAME = "message-cache-v1";
@@ -42,7 +42,7 @@ self.addEventListener("activate", (event) => {
 
 async function refreshToken() {
   try {
-    const response = await fetch("https://apis.erzen.xyz/v1/auth/refresh", {
+    const response = await fetch("https://apis.erzen.tk/v1/auth/refresh", {
       method: "POST",
       credentials: "include",
       headers: {
