@@ -145,7 +145,7 @@ class MessagingWidget {
       }
     });
 
-    this.socket = io("wss://apis.erzen.xyz/messaging", {
+    this.socket = io("wss://apis.erzen.tk/messaging", {
       transports: ["websocket"],
       query: {
         token: localStorage.getItem("token"),
@@ -196,7 +196,7 @@ class MessagingWidget {
 
     const progressToast = showToast("Uploading...", "info");
 
-    fetch("https://api.erzen.xyz/storage/upload", {
+    fetch("https://apis.erzen.tk/storage/upload", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
